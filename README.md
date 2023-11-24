@@ -6,7 +6,8 @@ python create_pair_responses.py --model_name_or_path $model_name_or_path$
 python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useGT --useFS
 python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useGT
 ```
-Data is saved at: /data2/common/weixinchen/data/truthfulness/{model_name_split}_{args.data_name}_{args.subdata_name}_{args.split}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}.json
+Data is saved at: /data2/common/weixinchen/data/truthfulness/{args.save_prefix}\_num\_{str(args.num_query)}\_useGT\_{str(args.useGT)}\_useFS_{str(args.useFS)}.json
+args.save_prefix could be "iter0_arcc"
 
 ## Combine data
 ```
