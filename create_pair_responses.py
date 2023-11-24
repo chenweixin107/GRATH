@@ -24,7 +24,6 @@ from transformers import (
     set_seed
 )
 from transformers.utils import PaddingStrategy
-from conversation import get_conv_template
 from tqdm import tqdm
 
 import pdb
