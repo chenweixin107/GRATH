@@ -35,7 +35,7 @@ parser.add_argument("--data_name", type=str, default="ai2_arc")
 parser.add_argument("--subdata_name", type=str, default="ARC-Challenge")
 parser.add_argument("--split", type=str, default="train")
 parser.add_argument("--tokenizer_name", type=str, default="meta-llama/Llama-2-7b-chat-hf")
-parser.add_argument("--model_name", type=str, default="meta-llama/Llama-2-7b-chat-hf")
+parser.add_argument("--model_name_or_path", type=str, default="meta-llama/Llama-2-7b-chat-hf")
 parser.add_argument('--useGT', action='store_true')
 parser.add_argument('--useFS', action='store_true')
 parser.add_argument("--seed", type=int, default=0)
@@ -44,12 +44,12 @@ set_seed(args.seed)
 random.seed(args.seed)
 
 # Load model
-model_name_split = args.model_name.split("/")[-1]
-model = AutoModelForCausalLM.from_pretrained(args.model_name, load_in_8bit=True, device_map='auto')
+model_name_split = args.model_name_or_path.split("/")[-1]
+model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, load_in_8bit=True, device_map='auto')
 model.eval()
 
 # Load tokenizer
-tokenizer_name = args.tokenizer_name if args.tokenizer_name is not None else args.model_name
+tokenizer_name = args.tokenizer_name if args.tokenizer_name is not None else args.model_name_or_path
 use_fast_tokenizer = "LlamaForCausalLM" not in model.config.architectures
 tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=use_fast_tokenizer, padding_side="left", legacy=False)
 tokenizer.pad_token_id = 0
