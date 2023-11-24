@@ -79,7 +79,7 @@ class ScriptArguments:
     )
 
 
-def get_stack_exchange_paired(
+def get_dataset(
     data_name: str = None,
     data_path: str = None,
     split: str = "train",
@@ -188,14 +188,14 @@ if __name__ == "__main__":
     tokenizer.pad_token = tokenizer.eos_token
 
     # 2. Load the Stack-exchange paired dataset
-    train_dataset = get_stack_exchange_paired(data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="train", sanity_check=script_args.sanity_check)
+    train_dataset = get_dataset(data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="train", sanity_check=script_args.sanity_check)
     train_dataset = train_dataset.filter(
         lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
         and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length
     )
 
     # 3. Load evaluation dataset
-    eval_dataset = get_stack_exchange_paired(data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="validation", sanity_check=True)
+    eval_dataset = get_dataset(data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="validation", sanity_check=True)
     eval_dataset = eval_dataset.filter(
         lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
         and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length
