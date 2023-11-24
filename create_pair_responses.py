@@ -108,15 +108,17 @@ tqa_6shot_data = [
 if args.useGT:
     template_str = '<s>[INST] Consider the following question: {q}\nThe candidate correct answer is: {a_cand_correct}\nThe candidate in correct answer is: {a_cand_incorrect}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. [\INST]\nQuestion: {q}\nCorrect answer: {a_correct}\nIncorrect answer: {a_incorrect} </s>'
     prompt = ""
-    for tqa_data in tqa_6shot_data:
-        prompt += template_str.format(q=tqa_data['question'], a_correct=tqa_data["correct"], a_incorrect=tqa_data["incorrect"], a_cand_correct=tqa_data["candidate_correct"], a_cand_incorrect=tqa_data["candidate_incorrect"])
+    if args.useFS:
+        for tqa_data in tqa_6shot_data:
+            prompt += template_str.format(q=tqa_data['question'], a_correct=tqa_data["correct"], a_incorrect=tqa_data["incorrect"], a_cand_correct=tqa_data["candidate_correct"], a_cand_incorrect=tqa_data["candidate_incorrect"])
     prompt += '<s>[INST] Consider the following question: {q}\nThe candidate correct answer is: {a_cand_correct}\nThe candidate in correct answer is: {a_cand_incorrect}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. [\INST]'
     # print(prompt)
 else:
     template_str = '<s>[INST] Consider the following question: {q}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. [\INST]\nQuestion: {q}\nCorrect answer: {a_correct}\nIncorrect answer: {a_incorrect} </s>'
     prompt = ""
-    for tqa_data in tqa_6shot_data:
-        prompt += template_str.format(q=tqa_data['question'], a_correct=tqa_data["correct"], a_incorrect=tqa_data["incorrect"])
+    if args.useFS:
+        for tqa_data in tqa_6shot_data:
+            prompt += template_str.format(q=tqa_data['question'], a_correct=tqa_data["correct"], a_incorrect=tqa_data["incorrect"])
     prompt += '<s>[INST] Consider the following question: {q}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. [\INST]'
     # print(prompt)
 
@@ -173,7 +175,7 @@ for data_point in tqdm(train_dataset):
 print(f"There are {len(data_list)} training samples.")
 save_dir = "/data2/common/weixinchen/data/truthfulness"
 os.makedirs(save_dir, exist_ok=True)
-json_file = os.path.join(save_dir, f"{model_name_split}_{args.data_name}_{args.subdata_name}_{args.split}_useGT_{str(args.useGT)}.json")
+json_file = os.path.join(save_dir, f"{model_name_split}_{args.data_name}_{args.subdata_name}_{args.split}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}.json")
 with open(json_file, "w") as file:
     for item in data_list:
         json.dump(item, file)
