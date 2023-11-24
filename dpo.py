@@ -22,6 +22,7 @@ class ScriptArguments:
     # data parameters
     beta: Optional[float] = field(default=0.1, metadata={"help": "the beta parameter for DPO loss"})
     dataset_name: Optional[str] = field(default="lvwerra/stack-exchange-paired", metadata={"help": "the dataset name"})
+    dataset_path: Optional[str] = field(default=None)
     seed: Optional[int] = field(default=0, metadata={"help": "random seed"})
 
     # training parameters
@@ -80,6 +81,7 @@ class ScriptArguments:
 
 def get_stack_exchange_paired(
     data_name: str = None,
+    data_path: str = None,
     split: str = "train",
     sanity_check: bool = False,
     cache_dir: str = None,
@@ -97,20 +99,11 @@ def get_stack_exchange_paired(
     Prompts are structured as follows:
       "Question: " + <prompt> + "\n\nAnswer: "
     """
-    if data_name == "arc-c":
-        dataset = load_dataset("ai2_arc", "ARC-Challenge", split=split)
-    elif data_name == "arc-e":
-        dataset = load_dataset("ai2_arc", "ARC-Easy", split=split)
-    elif data_name == "tqa":
-        dataset = load_dataset("truthful_qa", "multiple_choice", split="validation")
-    elif data_name == "generated":
-        dataset = load_dataset("json", data_files={"train": "/data2/common/weixinchen/data/truthfulness/Llama-2-7b-chat-hf_ai2_arc_ARC-Challenge_train_useGT_False.json"})["train"]
-    elif data_name == "dpo_generated_arc_nogt":
-        dataset = load_dataset("json", data_files={'train': "/data2/common/weixinchen/data/truthfulness/no_sft_dpo_generated_arcc_model_ai2_arc_ARC-Challenge_train_useGT_False.json"})['train']
-    elif data_name == "dpo_generated_correct_arc_generated_incorrect_arc_nogt":
-        dataset = load_dataset("json", data_files={'train': "/data2/common/weixinchen/data/truthfulness/dpo_generated_correct_arc_generated_incorrect_arc_nogt.json"})['train']
+    if data_path == None:
+        dataset = load_dataset(data_name, split=split)
     else:
-        raise ValueError(f"There is no {data_name} dataset.")
+        dataset = load_dataset("json", data_files={"train": data_path})["train"]
+
     original_columns = dataset.column_names
 
     if sanity_check:
@@ -122,27 +115,30 @@ def get_stack_exchange_paired(
 
     def return_prompt_and_responses(samples) -> Dict[str, str]:
         question_list, chosen_list, rejected_list = [], [], []
-        if data_name == "arc-e" or data_name == "arc-c":
-            for question, choices, answer_key in zip(samples["question"], samples["choices"], samples["answerKey"]):
-                texts, labels = choices["text"], choices["label"]
-                correct_idx = labels.index(answer_key)
-                correct_answer = texts[correct_idx]
-                incorrect_answers = [text for text in texts if text != correct_answer]
-                incorrect_answer = random.choice(incorrect_answers)
-                question_list.append(template_str.format(scenario=question, user_tag=user_tag, assistant_tag=assistant_tag))
-                chosen_list.append(correct_answer)
-                rejected_list.append(incorrect_answer)
-        elif "tqa" in data_name:
-            for question, mc1_targets in zip(samples["question"], samples["mc1_targets"]):
-                texts, labels = mc1_targets["choices"], mc1_targets["labels"]
-                correct_idx = labels.index(1)
-                correct_answer = texts[correct_idx]
-                incorrect_answers = [text for text in texts if text != correct_answer]
-                incorrect_answer = random.choice(incorrect_answers)
-                question_list.append(template_str.format(scenario=question, user_tag=user_tag, assistant_tag=assistant_tag))
-                chosen_list.append(correct_answer)
-                rejected_list.append(incorrect_answer)
-        elif "generated" in data_name:
+        if data_path == None:
+            if "arc" in data_name:
+                for question, choices, answer_key in zip(samples["question"], samples["choices"], samples["answerKey"]):
+                    texts, labels = choices["text"], choices["label"]
+                    correct_idx = labels.index(answer_key)
+                    correct_answer = texts[correct_idx]
+                    incorrect_answers = [text for text in texts if text != correct_answer]
+                    incorrect_answer = random.choice(incorrect_answers)
+                    question_list.append(template_str.format(scenario=question, user_tag=user_tag, assistant_tag=assistant_tag))
+                    chosen_list.append(correct_answer)
+                    rejected_list.append(incorrect_answer)
+            elif "truthful_qa" in data_name:
+                for question, mc1_targets in zip(samples["question"], samples["mc1_targets"]):
+                    texts, labels = mc1_targets["choices"], mc1_targets["labels"]
+                    correct_idx = labels.index(1)
+                    correct_answer = texts[correct_idx]
+                    incorrect_answers = [text for text in texts if text != correct_answer]
+                    incorrect_answer = random.choice(incorrect_answers)
+                    question_list.append(template_str.format(scenario=question, user_tag=user_tag, assistant_tag=assistant_tag))
+                    chosen_list.append(correct_answer)
+                    rejected_list.append(incorrect_answer)
+            else:
+                raise ValueError(f"There is no {data_name} dataset.")
+        else:
             for question, correct, incorrect in zip(samples["question"], samples["correct"], samples["incorrect"]):
                 question_list.append(template_str.format(scenario=question, user_tag=user_tag, assistant_tag=assistant_tag))
                 chosen_list.append(correct)
@@ -192,14 +188,14 @@ if __name__ == "__main__":
     tokenizer.pad_token = tokenizer.eos_token
 
     # 2. Load the Stack-exchange paired dataset
-    train_dataset = get_stack_exchange_paired(data_name=script_args.dataset_name, split="train", sanity_check=script_args.sanity_check)
+    train_dataset = get_stack_exchange_paired(data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="train", sanity_check=script_args.sanity_check)
     train_dataset = train_dataset.filter(
         lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
         and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length
     )
 
     # 3. Load evaluation dataset
-    eval_dataset = get_stack_exchange_paired(data_name=script_args.dataset_name, split="validation", sanity_check=True)
+    eval_dataset = get_stack_exchange_paired(data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="validation", sanity_check=True)
     eval_dataset = eval_dataset.filter(
         lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
         and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length
