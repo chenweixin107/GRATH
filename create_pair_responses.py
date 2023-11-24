@@ -34,6 +34,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--data_name", type=str, default="ai2_arc")
 parser.add_argument("--subdata_name", type=str, default="ARC-Challenge")
 parser.add_argument("--split", type=str, default="train")
+parser.add_argument("--num_query", type=int, default=-1)
 parser.add_argument("--tokenizer_name", type=str, default="meta-llama/Llama-2-7b-chat-hf")
 parser.add_argument("--model_name_or_path", type=str, default="meta-llama/Llama-2-7b-chat-hf")
 parser.add_argument('--useGT', action='store_true')
@@ -123,7 +124,7 @@ else:
 
 # Generate pair responses
 data_list = []
-for data_point in tqdm(train_dataset):
+for data_point in tqdm(train_dataset[:args.num_query]):
     question, choices, answer_key = data_point["question"], data_point["choices"], data_point["answerKey"]
     texts, labels = choices["text"], choices["label"]
 
@@ -174,7 +175,7 @@ for data_point in tqdm(train_dataset):
 print(f"There are {len(data_list)} training samples.")
 save_dir = "/data2/common/weixinchen/data/truthfulness"
 os.makedirs(save_dir, exist_ok=True)
-json_file = os.path.join(save_dir, f"{model_name_split}_{args.data_name}_{args.subdata_name}_{args.split}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}.json")
+json_file = os.path.join(save_dir, f"{model_name_split}_{args.data_name}_{args.subdata_name}_{args.split}_num_{str(args.num_query)}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}.json")
 with open(json_file, "w") as file:
     for item in data_list:
         json.dump(item, file)
