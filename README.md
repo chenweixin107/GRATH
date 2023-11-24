@@ -1,10 +1,10 @@
 # AdaptiveDPO
 ## Create data
 ```
-python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useFS # preferred
-python create_pair_responses.py --model_name_or_path $model_name_or_path$
-python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useGT --useFS
-python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useGT
+python create_pair_responses.py --model_name_or_path $model_name_or_path$ --save_prefix $save_prefix$ --useFS # preferred
+python create_pair_responses.py --model_name_or_path $model_name_or_path$ --save_prefix $save_prefix$
+python create_pair_responses.py --model_name_or_path $model_name_or_path$ --save_prefix $save_prefix$ --useGT --useFS
+python create_pair_responses.py --model_name_or_path $model_name_or_path$ --save_prefix $save_prefix$ --useGT
 ```
 Data is saved at: /data2/common/weixinchen/data/truthfulness/{args.save_prefix}\_num\_{str(args.num_query)}\_useGT\_{str(args.useGT)}\_useFS_{str(args.useFS)}.json
 
@@ -18,8 +18,8 @@ Data is saved at: /data2/common/weixinchen/data/truthfulness/{new_data_path}_com
 
 ## DPO
 ```
-accelerate launch dpo.py --dataset_path $dataset_path$ --model_name_or_path $model_name_or_path$ --output_dir $output_dir$ # preferred
-accelerate launch dpo.py --dataset_name $dataset_name$ --model_name_or_path $model_name_or_path$ --output_dir $output_dir$
+accelerate launch dpo.py --dataset_path $dataset_path$ --model_name_or_path $model_name_or_path$ --output_dir $output_dir$ --seed $seed$# preferred
+accelerate launch dpo.py --dataset_name $dataset_name$ --model_name_or_path $model_name_or_path$ --output_dir $output_dir$ --seed $seed$
 ```
 Model is saved at: {output_dir} which could be iter\_xxx\_arcc\_num\_xxx\_useFT\_xxx\_useFS\_xxx/step\_xxx
 
