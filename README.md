@@ -18,7 +18,7 @@ Data is saved at: /data2/common/weixinchen/data/truthfulness/{new_data_path}_com
 accelerate launch dpo.py --dataset_path $dataset_path$ --model_name_or_path $model_name_or_path$ --output_dir $output_dir$ # preferred
 accelerate launch dpo.py --dataset_name $dataset_name$ --model_name_or_path $model_name_or_path$ --output_dir $output_dir$
 ```
-Model is saved at: {output_dir}
+Model is saved at: {output_dir} which could be iter_xxx_num_xxx_useFT_xxx_useFS_xxx/step_xxx
 
 ## Evaluation
 Use https://github.com/EleutherAI/lm-evaluation-harness
