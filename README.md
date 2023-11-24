@@ -17,4 +17,4 @@ accelerate launch dpo_llama2.py --model_name_or_path $model_name_or_path$ --outp
 ```
 
 ## Evaluation
-
+Use https://github.com/EleutherAI/lm-evaluation-harness
