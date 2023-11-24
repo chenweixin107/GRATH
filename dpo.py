@@ -202,7 +202,6 @@ if __name__ == "__main__":
     )
 
     # 4. initialize training arguments:
-    script_args.output_dir = os.path.join(script_args.output_dir, script_args.dataset_name)
     os.makedirs(script_args.output_dir, exist_ok=True)
     training_args = TrainingArguments(
         per_device_train_batch_size=script_args.per_device_train_batch_size,
