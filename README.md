@@ -1,9 +1,9 @@
 # AdaptiveDPO
 ## Create data
 ```
-python create_pair_responses.py --model_name $model_name$ --useFS # preferred
-python create_pair_responses.py --model_name $model_name$
-python create_pair_responses.py --model_name $model_name$ --useGT --useFS
+python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useFS # preferred
+python create_pair_responses.py --model_name_or_path $model_name_or_path$
+python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useGT --useFS
 ```
 
 ## Combine data
