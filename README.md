@@ -5,20 +5,20 @@ python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useF
 python create_pair_responses.py --model_name_or_path $model_name_or_path$
 python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useGT --useFS
 ```
-Data is saved at: /data2/common/weixinchen/data/truthfulness/{model_name_split}_{args.data_name}_{args.subdata_name}_{args.split}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}.json
+Data is saved at: /data2/common/weixinchen/data/truthfulness/$model_name_split$_$data_name$_$subdata_name$_$split$_useGT_$useGT$_useFS_$useFS$.json
 
 ## Combine data
 ```
 python combine_new_correct_ori_wrong.py --new_data_path $new_data_path$ --ori_data_path $ori_data_path$
 ```
-Data is saved at: /data2/common/weixinchen/data/truthfulness/{new_data_path}_combined.json
+Data is saved at: /data2/common/weixinchen/data/truthfulness/$new_data_path$_combined.json
 
 ## DPO
 ```
 accelerate launch dpo.py --dataset_path $dataset_path$ --model_name_or_path $model_name_or_path$ --output_dir $output_dir$ # preferred
 accelerate launch dpo.py --dataset_name $dataset_name$ --model_name_or_path $model_name_or_path$ --output_dir $output_dir$
 ```
-Model is saved at: 
+Model is saved at: $output_dir$
 
 ## Evaluation
 Use https://github.com/EleutherAI/lm-evaluation-harness
