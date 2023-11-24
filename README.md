@@ -5,6 +5,7 @@ python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useF
 python create_pair_responses.py --model_name_or_path $model_name_or_path$
 python create_pair_responses.py --model_name_or_path $model_name_or_path$ --useGT --useFS
 ```
+Data is saved at: {model_name_split}_{args.data_name}_{args.subdata_name}_{args.split}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}.json
 
 ## Combine data
 ```
