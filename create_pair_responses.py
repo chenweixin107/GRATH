@@ -40,12 +40,12 @@ parser.add_argument("--model_name_or_path", type=str, default="meta-llama/Llama-
 parser.add_argument('--useGT', action='store_true')
 parser.add_argument('--useFS', action='store_true')
 parser.add_argument("--seed", type=int, default=0)
+parser.add_argument("--save_prefix", type=str, default=None)
 args = parser.parse_args()
 set_seed(args.seed)
 random.seed(args.seed)
 
 # Load model
-model_name_split = args.model_name_or_path.split("/")[-1]
 model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, load_in_8bit=True, device_map='auto')
 model.eval()
 
@@ -175,7 +175,7 @@ for data_point in tqdm(train_dataset[:args.num_query]):
 print(f"There are {len(data_list)} training samples.")
 save_dir = "/data2/common/weixinchen/data/truthfulness"
 os.makedirs(save_dir, exist_ok=True)
-json_file = os.path.join(save_dir, f"{model_name_split}_{args.data_name}_{args.subdata_name}_{args.split}_num_{str(args.num_query)}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}.json")
+json_file = os.path.join(save_dir, f"{args.save_prefix}_num_{str(args.num_query)}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}.json")
 with open(json_file, "w") as file:
     for item in data_list:
         json.dump(item, file)
