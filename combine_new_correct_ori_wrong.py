@@ -15,7 +15,6 @@ import pdb
 parser = argparse.ArgumentParser()
 parser.add_argument("--new_data_path", type=str, default=None)
 parser.add_argument("--ori_data_path", type=str, default=None)
-parser.add_argument("--save_name", type=str, default=None)
 args = parser.parse_args()
 
 new_dataset = load_dataset("json", data_files={'train': args.new_data_path})['train']
@@ -42,9 +41,7 @@ for new_question, new_correct, new_incorrect in zip(new_dataset["question"], new
     })
 
 print(f"There are {len(dataset)} samples.")
-save_dir = "/data2/common/weixinchen/data/truthfulness"
-os.makedirs(save_dir, exist_ok=True)
-json_file = os.path.join(save_dir, f"{args.save_name}.json")
+json_file = args.new_data_path.split(".json")[0] + "_combined.json"
 with open(json_file, "w") as file:
     for item in dataset:
         json.dump(item, file)
