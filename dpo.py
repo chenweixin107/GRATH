@@ -53,8 +53,8 @@ class ScriptArguments:
     max_length: Optional[int] = field(default=1024, metadata={"help": "the maximum sequence length"})
     max_steps: Optional[int] = field(default=1000, metadata={"help": "max number of training steps"})
     logging_steps: Optional[int] = field(default=10, metadata={"help": "the logging frequency"})
-    save_steps: Optional[int] = field(default=100, metadata={"help": "the saving frequency"})
-    eval_steps: Optional[int] = field(default=100, metadata={"help": "the evaluation frequency"})
+    save_steps: Optional[int] = field(default=1000, metadata={"help": "the saving frequency"})
+    eval_steps: Optional[int] = field(default=1000, metadata={"help": "the evaluation frequency"})
 
     output_dir: Optional[str] = field(default="./results", metadata={"help": "the output directory"})
     log_freq: Optional[int] = field(default=1, metadata={"help": "the logging frequency"})
@@ -100,7 +100,15 @@ def get_dataset(
       "Question: " + <prompt> + "\n\nAnswer: "
     """
     if data_path == None:
-        dataset = load_dataset(data_name, split=split)
+        if "arc" in data_name:
+            if data_name == "ai2_arc/ARC-Challenge":
+                dataset = load_dataset("ai2_arc", "ARC-Challenge", split=split)
+            elif data_name == "ai2_arc/ARC-Easy":
+                dataset = load_dataset("ai2_arc", "ARC-Easy", split=split)
+            else:
+                raise ValueError(f"There is no {data_name} dataset.")
+        else:
+            dataset = load_dataset(data_name, split=split)
     else:
         dataset = load_dataset("json", data_files={"train": data_path})["train"]
 
