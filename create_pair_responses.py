@@ -37,6 +37,7 @@ parser.add_argument("--split", type=str, default="train")
 parser.add_argument("--num_query", type=int, default=None)
 parser.add_argument("--tokenizer_name", type=str, default="meta-llama/Llama-2-7b-chat-hf")
 parser.add_argument("--model_name_or_path", type=str, default="meta-llama/Llama-2-7b-chat-hf")
+parser.add_argument("--model_type", type=str, default="llama2")
 parser.add_argument('--useGT', action='store_true')
 parser.add_argument('--useFS', action='store_true')
 parser.add_argument("--seed", type=int, default=0)
@@ -149,23 +150,32 @@ halu_6shot_data = [
     },
 ]
 
+if "llama2" in args.model_type:
+    user_tag = "<s>[INST]"
+    assistant_tag = "[/INST]"
+elif "zephyr" in args.model_type:
+    user_tag = "\n<|user|>\n"
+    assistant_tag = "</s>\n<|assistant|>"
+else:
+    raise ValueError(f"There is no {args.model_type} model type.")
+
 # Template
 if args.useGT:
-    template_str = '<s>[INST] Consider the following question: {q}\nThe candidate correct answer is: {a_cand_correct}\nThe candidate in correct answer is: {a_cand_incorrect}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. [\INST]\nQuestion: {q}\nCorrect answer: {a_correct}\nIncorrect answer: {a_incorrect} </s>'
+    template_str = '{user_tag} Consider the following question: {q}\nThe candidate correct answer is: {a_cand_correct}\nThe candidate in correct answer is: {a_cand_incorrect}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. {assistant_tag}\nQuestion: {q}\nCorrect answer: {a_correct}\nIncorrect answer: {a_incorrect} </s>'
     prompt = ""
     if args.useFS:
         for tqa_data in tqa_6shot_data:
-            prompt += template_str.format(q=tqa_data['question'], a_correct=tqa_data["correct"], a_incorrect=tqa_data["incorrect"], a_cand_correct=tqa_data["candidate_correct"], a_cand_incorrect=tqa_data["candidate_incorrect"])
-    prompt += '<s>[INST] Consider the following question: {q}\nThe candidate correct answer is: {a_cand_correct}\nThe candidate in correct answer is: {a_cand_incorrect}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. [\INST]'
+            prompt += template_str.format(q=tqa_data['question'], a_correct=tqa_data["correct"], a_incorrect=tqa_data["incorrect"], a_cand_correct=tqa_data["candidate_correct"], a_cand_incorrect=tqa_data["candidate_incorrect"], user_tag=user_tag, assistant_tag=assistant_tag)
+    prompt += '{user_tag} Consider the following question: {q}\nThe candidate correct answer is: {a_cand_correct}\nThe candidate in correct answer is: {a_cand_incorrect}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. {assistant_tag}'
     # print(prompt)
 else:
-    template_str = '<s>[INST] Consider the following question: {q}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. [\INST]\nQuestion: {q}\nCorrect answer: {a_correct}\nIncorrect answer: {a_incorrect} </s>'
+    template_str = '{user_tag} Consider the following question: {q}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. {assistant_tag}\nQuestion: {q}\nCorrect answer: {a_correct}\nIncorrect answer: {a_incorrect} </s>'
     prompt = ""
     if args.useFS:
         for tqa_data in tqa_6shot_data:
-            prompt += template_str.format(q=tqa_data['question'], a_correct=tqa_data["correct"], a_incorrect=tqa_data["incorrect"])
-    prompt += '<s>[INST] Consider the following question: {q}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. [\INST]'
-    # print(prompt)
+            prompt += template_str.format(q=tqa_data['question'], a_correct=tqa_data["correct"], a_incorrect=tqa_data["incorrect"], user_tag=user_tag, assistant_tag=assistant_tag)
+    prompt += '{user_tag} Consider the following question: {q}\nPlease generate a correct answer and an incorrect answer. Make sure the answers are plausible. There is no need to give an explanation. {assistant_tag}'
+    print(prompt)
 
 # Generate pair responses
 data_list = []
@@ -180,9 +190,9 @@ for question, choices, answer_key in zip(train_dataset["question"][:num_query], 
     incorrect_answer = random.choice(incorrect_answers)
 
     if args.useGT:
-        input = prompt.format(q=question, a_cand_correct=correct_answer, a_cand_incorrect=incorrect_answer)
+        input = prompt.format(q=question, a_cand_correct=correct_answer, a_cand_incorrect=incorrect_answer, user_tag=user_tag, assistant_tag=assistant_tag)
     else:
-        input = prompt.format(q=question)
+        input = prompt.format(q=question, user_tag=user_tag, assistant_tag=assistant_tag)
     input_ids = tokenizer(input, return_tensors="pt").input_ids.to(model.device)
     max_len = input_ids.shape[-1] + 100
 
@@ -200,6 +210,7 @@ for question, choices, answer_key in zip(train_dataset["question"][:num_query], 
         g_correct_answer = g_correct_answer.split("Correct answer: ")[-1]
         g_correct_answer = g_correct_answer.replace("\n", "")
         g_incorrect_answer = g_incorrect_answer.replace("\n", "")
+        # print("Succeeded to generate in the defined format...")
         # print("\nQuestion: ", question)
         # print("\nCorrect answer: ", g_correct_answer)
         # print("\nIncorrect answer: ", g_incorrect_answer)
@@ -219,8 +230,9 @@ for question, choices, answer_key in zip(train_dataset["question"][:num_query], 
 # Save
 print(f"There are {len(data_list)} training samples.")
 save_dir = "/data2/common/weixinchen/data/truthfulness"
+save_dir = os.path.join(save_dir, args.model_type)
 os.makedirs(save_dir, exist_ok=True)
-json_file = os.path.join(save_dir, f"{args.save_prefix}_num_{str(num_query)}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}.json")
+json_file = os.path.join(save_dir, f"{args.save_prefix}_num_{str(num_query)}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}_seed_{str(args.seed)}.json")
 with open(json_file, "w") as file:
     for item in data_list:
         json.dump(item, file)
