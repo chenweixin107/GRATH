@@ -23,12 +23,17 @@ class ScriptArguments:
     beta: Optional[float] = field(default=0.1, metadata={"help": "the beta parameter for DPO loss"})
     dataset_name: Optional[str] = field(default="lvwerra/stack-exchange-paired", metadata={"help": "the dataset name"})
     dataset_path: Optional[str] = field(default=None)
+    tokenizer_name: Optional[str] = field(default="meta-llama/Llama-2-7b-chat-hf", metadata={"help": "the tokenizer name"})
     seed: Optional[int] = field(default=0, metadata={"help": "random seed"})
 
     # training parameters
     model_name_or_path: Optional[str] = field(
         default="../sft/results/final_checkpoint",
         metadata={"help": "the location of the SFT model name or path"},
+    )
+    model_type: Optional[str] = field(
+        default="llama2",
+        metadata={"help": "the type of model"},
     )
     learning_rate: Optional[float] = field(default=5e-4, metadata={"help": "optimizer learning rate"})
     lr_scheduler_type: Optional[str] = field(default="cosine", metadata={"help": "the lr scheduler type"})
@@ -60,7 +65,8 @@ class ScriptArguments:
     log_freq: Optional[int] = field(default=1, metadata={"help": "the logging frequency"})
 
     # instrumentation
-    sanity_check: Optional[bool] = field(default=False, metadata={"help": "only train on 1000 samples"})
+    sanity_check: Optional[bool] = field(default=False, metadata={"help": "whether train on a subset"})
+    num_sample: Optional[int] = field(default=1000, metadata={"help": "size of subset"})
     report_to: Optional[str] = field(
         default="wandb",
         metadata={
@@ -80,10 +86,12 @@ class ScriptArguments:
 
 
 def get_dataset(
+    model_type: str = None,
     data_name: str = None,
     data_path: str = None,
     split: str = "train",
     sanity_check: bool = False,
+    num_sample: int = None,
     cache_dir: str = None,
     num_proc=24,
 ) -> Dataset:
@@ -115,10 +123,18 @@ def get_dataset(
     original_columns = dataset.column_names
 
     if sanity_check:
-        dataset = dataset.select(range(min(len(dataset), 1000)))
+        dataset = dataset.select(range(min(len(dataset), num_sample)))
+        print(f"Len of {split} set is: {len(dataset)}")
 
-    user_tag = "[INST]"
-    assistant_tag = "[/INST]"
+    if "llama2" in model_type:
+        user_tag = "[INST]"
+        assistant_tag = "[/INST]"
+    elif "zephyr" in model_type:
+        user_tag = "<|user|>\n"
+        assistant_tag = "</s>\n<|assistant|>"
+    else:
+        raise ValueError(f"There is no {model_type} model type.")
+
     template_str = '{user_tag} {scenario} {assistant_tag}'
 
     def return_prompt_and_responses(samples) -> Dict[str, str]:
@@ -192,25 +208,28 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         load_in_4bit=True,
     )
-    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+    tokenizer = AutoTokenizer.from_pretrained(script_args.tokenizer_name)
     tokenizer.pad_token = tokenizer.eos_token
 
     # 2. Load the Stack-exchange paired dataset
-    train_dataset = get_dataset(data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="train", sanity_check=script_args.sanity_check)
+    train_dataset = get_dataset(model_type=script_args.model_type, data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="train", sanity_check=script_args.sanity_check, num_sample=script_args.num_sample)
     train_dataset = train_dataset.filter(
         lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
         and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length
     )
 
     # 3. Load evaluation dataset
-    eval_dataset = get_dataset(data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="validation", sanity_check=True)
+    eval_dataset = get_dataset(model_type=script_args.model_type, data_name=script_args.dataset_name, data_path=script_args.dataset_path, split="validation", sanity_check=True, num_sample=script_args.num_sample)
     eval_dataset = eval_dataset.filter(
         lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
         and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length
     )
 
     # 4. initialize training arguments:
-    script_args.output_dir = script_args.output_dir + f"_seed_{str(script_args.seed)}"
+    if script_args.sanity_check:
+        script_args.output_dir = script_args.output_dir + f"_num_sample_{str(script_args.num_sample)}" + f"_seed_{str(script_args.seed)}"
+    else:
+        script_args.output_dir = script_args.output_dir + f"_seed_{str(script_args.seed)}"
     os.makedirs(script_args.output_dir, exist_ok=True)
     training_args = TrainingArguments(
         per_device_train_batch_size=script_args.per_device_train_batch_size,
