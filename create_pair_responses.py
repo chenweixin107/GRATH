@@ -10,7 +10,7 @@ import evaluate
 import numpy as np
 import torch
 import torch.nn as nn
-from datasets import load_dataset
+from datasets import load_dataset, concatenate_datasets
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import (
     AutoModelForSequenceClassification,
@@ -57,7 +57,12 @@ tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=use_fast_toke
 tokenizer.pad_token_id = 0
 
 # Load dataset
-train_dataset = load_dataset(args.data_name, args.subdata_name)[args.split]
+if args.subdata_name == "all":
+    dataset1 = load_dataset("ai2_arc", 'ARC-Easy')
+    dataset2 = load_dataset("ai2_arc", 'ARC-Challenge')
+    train_dataset = concatenate_datasets([dataset1['train'], dataset2['train']])
+else:
+    train_dataset = load_dataset(args.data_name, args.subdata_name)[args.split]
 
 # few-shot examples
 tqa_6shot_data = [
