@@ -1,7 +1,5 @@
 # 0. imports
 import os
-os.environ['TRANSFORMERS_CACHE'] = '/data2/common/weixinchen/huggingface/cache/'
-
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 import torch
