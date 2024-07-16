@@ -1,5 +1,5 @@
 # GRATH: Gradual Self-Truthifying for Large Language Models
-This repository is an official implementation of the ICML 2024 paper "GRATH: Gradual Self-Truthifying for Large Language Models".
+This repository is an official implementation of the ICML 2024 paper [GRATH: Gradual Self-Truthifying for Large Language Models](https://arxiv.org/abs/2401.12292).
 
 <img src="./figures/framework.png" alt="framework" style="zoom:50%;" />
 
