@@ -1,5 +1,7 @@
 # GRATH: Gradual Self-Truthifying for Large Language Models
 This repository is an official implementation of the ICML 2024 paper "GRATH: Gradual Self-Truthifying for Large Language Models".
+<img src="./figures/framework.png" alt="framework" style="zoom:50%;" />
+We propose GRAdual self-truTHifying (GRATH), a novel post-processing method to enhance truthfulness of LLMs. GRATH utilizes out-of-domain question prompts to generate pairwise truthfulness training data with each pair containing a question and its correct and incorrect answers, and then optimizes the model via direct preference optimization (DPO) to learn from the truthfulness difference between answer pairs. GRATH iteratively refines truthfulness data and updates the model, leading to a gradual improvement in model truthfulness in a self-supervised manner.
 
 ## Create data
 ```
