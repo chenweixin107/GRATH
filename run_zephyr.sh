@@ -29,7 +29,7 @@ run_python_command() {
 }
 
 # Loop from 1 to 10 with a stride of 1
-for iteration in {0..9..1}
+for iteration in {0..1..1}
 do
  run_python_command "$iteration"
 done
