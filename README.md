@@ -1,4 +1,6 @@
-# AdaptiveDPO
+# GRATH: Gradual Self-Truthifying for Large Language Models
+This repository is an official implementation of the ICML 2024 paper "GRATH: Gradual Self-Truthifying for Large Language Models".
+
 ## Create data
 ```
 python create_pair_responses.py --model_name_or_path $model_name_or_path$ --save_prefix $save_prefix$ --useFS # preferred
