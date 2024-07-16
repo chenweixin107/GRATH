@@ -21,21 +21,22 @@ new_dataset = load_dataset("json", data_files={'train': args.new_data_path})['tr
 ori_dataset = load_dataset("json", data_files={'train': args.ori_data_path})['train']
 dataset = []
 
-for new_question, new_correct, new_incorrect in zip(new_dataset["question"], new_dataset["correct"], new_dataset["incorrect"]):
+for ori_question, ori_correct, ori_incorrect in zip(ori_dataset["question"], ori_dataset["correct"], ori_dataset["incorrect"]):
     try:
-        question_idx = ori_dataset["question"].index(new_question)
+        question_idx = new_dataset["question"].index(ori_question)
+        new_incorrect = new_dataset["incorrect"][question_idx]
+        new_correct = new_dataset["correct"][question_idx]
     except ValueError:
-        continue
-    ori_incorrect = ori_dataset["incorrect"][question_idx]
-    ori_correct = ori_dataset["correct"][question_idx]
-    print(f"question:\n{new_question}")
-    print(f"new_correct:\n{new_correct}")
-    print(f"ori_correct:\n{ori_correct}")
-    print(f"new_incorrect\n{new_incorrect}")
-    print(f"ori_incorrect:\n{ori_incorrect}")
-    print("\n")
+        new_incorrect = ori_incorrect
+        new_correct = ori_correct
+    # print(f"question:\n{ori_question}")
+    # print(f"ori_correct:\n{ori_correct}")
+    # print(f"new_correct:\n{new_correct}")
+    # print(f"ori_incorrect\n{ori_incorrect}")
+    # print(f"new_incorrect:\n{new_incorrect}")
+    # print("\n")
     dataset.append({
-        "question": new_question,
+        "question": ori_question,
         "correct": new_correct,
         "incorrect": ori_incorrect,
     })
