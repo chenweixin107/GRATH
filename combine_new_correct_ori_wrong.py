@@ -1,6 +1,4 @@
 import os
-os.environ['TRANSFORMERS_CACHE'] = '/data2/common/weixinchen/huggingface/cache/'
-
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 import argparse
@@ -8,9 +6,6 @@ import torch
 from datasets import Dataset, load_dataset
 import random
 import json
-
-import pdb
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--new_data_path", type=str, default=None)
