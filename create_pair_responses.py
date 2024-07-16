@@ -1,6 +1,4 @@
 import os
-os.environ['TRANSFORMERS_CACHE'] = '/data2/common/weixinchen/huggingface/cache/'
-
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 import random
@@ -234,7 +232,7 @@ for question, choices, answer_key in zip(train_dataset["question"][:num_query], 
 
 # Save
 print(f"There are {len(data_list)} training samples.")
-save_dir = "/data2/common/weixinchen/data/truthfulness"
+save_dir = "/data2/common/username/data/truthfulness"
 save_dir = os.path.join(save_dir, args.model_type)
 os.makedirs(save_dir, exist_ok=True)
 json_file = os.path.join(save_dir, f"{args.save_prefix}_num_{str(num_query)}_useGT_{str(args.useGT)}_useFS_{str(args.useFS)}_seed_{str(args.seed)}.json")
