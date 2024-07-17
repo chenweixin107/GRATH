@@ -59,3 +59,9 @@ accelerate launch dpo.py --dataset_name $dataset_name$ --model_name_or_path $mod
 
 ## Created data and fine-tuned models
 The pairwise truthfulness training data used in our paper is available [here](https://huggingface.co/datasets/weixinchen/GRATH).
+
+The truthified models are available here:
+- [GRATH-selftruth](https://huggingface.co/weixinchen/GRATH-selftruth) is a self-truthified model (applied with DPO once). The reference model of DPO is set as the current base model (i.e., the pretrained base model). This model reaches good performance on TruthfulQA MC tasks and remains good generative capability.
+- [GRATH-gradtruth](https://huggingface.co/weixinchen/GRATH-gradtruth) is a gradually self-truthified model with one iteration (applied with DPO twice). The reference model of DPO is set as the current base model. This model reaches high performance on TruthfulQA MC tasks efficiently, but its generative capability might decline.
+- [GRATH-gradtruth-fixref](https://huggingface.co/weixinchen/GRATH-gradtruth-fixref) is a gradually self-truthified model with nine iterations (applied with DPO ten times). The reference model of DPO is set as the pretrained base model to avoid the overfitting problem. This model reaches high performance on TruthfulQA MC tasks and remains good generative capability, but it takes much longer time to train.
+
