@@ -55,3 +55,7 @@ accelerate launch dpo.py --dataset_name $dataset_name$ --model_name_or_path $mod
 ```
 - Fine-tuned model will be saved at: `$output_dir$` (an example: "iter\_xxx\_arcc\_num\_xxx\_useFT\_xxx\_useFS\_xxx/step\_xxx")
 - NOTE: This code references the repo—[huggingface/trl](https://github.com/huggingface/trl/blob/main/examples/research_projects/stack_llama_2/scripts/dpo_llama2.py).
+
+
+## Created data and fine-tuned models
+The pairwise truthfulness training data used in our paper is available [here](https://huggingface.co/datasets/weixinchen/GRATH).
